@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>时间线</title>
+    <!-- 引入TailwindCSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- 引入Font Awesome图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- 自定义样式 -->
+    <style>
+        /* 自定义动画效果 */
+        .btn-hover:hover {
+            transform: scale(1.05);
+            transition: transform 0.2s ease;
+        }
+        
+        .input-focus:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+            transition: all 0.2s ease;
+        }
+        
+        .card-hover:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: box-shadow 0.3s ease;
+        }
+        
+        /* 背景渐变 */
+        .bg-gradient {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        
+        /* 确保主容器占满屏幕高度 */
+        #app {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            max-width: 100%;
+            position: relative;
+        }
+        
+        .main-view, .save-view {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* 固定顶部区域 */
+        .header, .save-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 20;
+            background: white;
+            width: 100%;
+            margin: 0 auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        /* 可滚动的记录列表区域 */
+        .record-list, .save-record-list {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow-y: auto;
+            /* 为顶部和底部区域留出空间 */
+            padding-top: 210px; /* 根据顶部区域高度调整 */
+            padding-bottom: 80px; /* 为底部按钮留出空间 */
+            -webkit-overflow-scrolling: touch; /* 提升移动端滚动体验 */
+        }
+        
+        /* 保存界面的特殊样式 */
+        .save-record-list {
+            padding-top: 44px; /* 保存界面顶部区域较小 */
+            padding-bottom: 0; /* 保存界面不需要底部间距 */
+            background: transparent;
+        }
+        
+        /* 固定底部区域 */
+        .footer, .save-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            z-index: 20;
+            width: 100%;
+            margin: 0 auto;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+        
+        /* 用于保存图片的容器样式 */
+        .save-container {
+            background: transparent;
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* 调整保存页面标题和内容的相对位置 */
+        .save-header {
+            height: 40px;
+            padding-top: 0;
+            padding-bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .save-view .save-record-list {
+            padding-top: 40px; /* 匹配header高度 */
+        }
+        
+        @media (min-width: 768px) {
+            .header, .footer, .save-header, .save-footer {
+                max-width: 32rem; /* tailwind md 对应的值 */
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+    <div id="app" class="max-w-md mx-auto min-h-screen">
+        <!-- 主界面 -->
+        <div class="main-view" v-if="!showSaveView">
+            <div class="header bg-white shadow-sm p-4 rounded-b-lg">
+                <h1 class="text-2xl font-bold text-center text-indigo-600 mb-2">时间线</h1>
+                <div class="current-time text-center mb-4">
+                    <span class="text-gray-500 text-sm">此时：</span>
+                    <span class="text-3xl font-mono font-bold">{{ currentTime }}</span>
+                </div>
+                <button class="add-btn w-full py-3 px-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg shadow-md btn-hover flex items-center justify-center transition-all duration-200" @click="addRecord">
+                    <i class="fas fa-plus mr-2"></i> 添加记录
+                </button>
+                
+                <div class="title-container mt-4 text-center h-8">
+                    <h2 class="text-lg text-gray-700 cursor-pointer hover:text-indigo-500 transition-colors duration-200" v-if="records.length > 0" @click="editMainTitle">{{ mainTitle }}</h2>
+                </div>
+            </div>
+            
+            <div class="record-list p-4">
+                <!-- 添加一个占位空白区域，确保第一条记录不被遮挡 -->
+                <div class="placeholder h-2 mb-2" v-if="records.length > 0"></div>
+                
+                <div class="record-item flex items-center p-3 mb-3 bg-white rounded-lg shadow-sm card-hover" v-for="(record, index) in records" :key="index">
+                    <div class="record-time w-24 font-mono font-semibold text-gray-700">{{ formatTime(record.time) }}</div>
+                    <div class="record-title flex-1 px-3 text-gray-600 cursor-pointer hover:text-indigo-500 transition-colors duration-200" @click="editRecordTitle(index)">{{ record.title }}</div>
+                    <div class="record-delete w-8 h-8 flex items-center justify-center text-red-400 hover:text-red-600 cursor-pointer transition-colors duration-200" @click="confirmDelete(index)">
+                        <i class="fas fa-times"></i>
+                    </div>
+                </div>
+                
+                <!-- 空状态提示 -->
+                <div class="empty-state text-center py-10 text-gray-400" v-if="records.length === 0">
+                    <i class="fas fa-clock text-5xl mb-3"></i>
+                    <p>点击"添加记录"开始记录</p>
+                </div>
+            </div>
+            
+            <div class="footer bg-white p-3 grid grid-cols-3 gap-2">
+                <button class="py-2 px-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm btn-hover transition-all duration-200" @click="toggleTimeFormat">
+                    <i class="fas fa-clock mr-1"></i> 时间规整
+                </button>
+                <button class="py-2 px-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm btn-hover transition-all duration-200" @click="confirmClearAll">
+                    <i class="fas fa-trash-alt mr-1"></i> 清空记录
+                </button>
+                <button class="py-2 px-1 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg text-sm btn-hover transition-all duration-200" @click="showSaveView = true">
+                    <i class="fas fa-save mr-1"></i> 保存记录
+                </button>
+            </div>
+        </div>
+        
+        <!-- 保存界面 -->
+        <div class="save-view" v-else>
+            <div class="save-header relative p-0 bg-white">
+                <button class="back-btn absolute left-4 top-1/2 transform -translate-y-1/2 text-2xl text-gray-500 hover:text-indigo-500 transition-colors duration-200" @click="showSaveView = false">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2 class="text-center text-lg font-medium text-gray-700 py-3 cursor-pointer hover:text-indigo-500 transition-colors duration-200" @click="editMainTitle">{{ mainTitle }}</h2>
+            </div>
+            
+            <div class="save-record-list bg-gradient p-4">
+                <div class="save-container">
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-4">
+                        <div class="p-2 bg-indigo-50 border-b border-indigo-100">
+                            <h3 class="text-center text-indigo-700 font-medium text-base">{{ mainTitle }}</h3>
+                        </div>
+                        <div class="record-item flex items-center p-2 border-b border-gray-100 last:border-b-0" v-for="(record, index) in displayRecords" :key="index">
+                            <div class="record-time w-24 font-mono font-semibold text-gray-700">{{ formatTime(record.time) }}</div>
+                            <div class="record-title flex-1 px-3 text-gray-600">{{ record.title }}</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 底部说明文字将由JS动态添加 -->
+            </div>
+            
+            <!-- 保存界面的footer部分 -->
+            <div class="save-footer bg-white p-3">
+                <!-- 第一行：3个按钮并排 -->
+                <div class="grid grid-cols-3 gap-2 mb-3">
+                    <button class="py-2 px-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm btn-hover transition-all duration-200" @click="toggleTimeFormat">
+                        <i class="fas fa-clock mr-1"></i> 时间规整
+                    </button>
+                    <button class="py-2 px-1 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg text-sm btn-hover transition-all duration-200" @click="changeStyle">
+                        <i class="fas fa-palette mr-1"></i> 更换样式
+                    </button>
+                    <button class="py-2 px-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm btn-hover transition-all duration-200" @click="toggleOrder">
+                        <i class="fas fa-sort mr-1"></i> {{ isReversed ? '顺序展示' : '倒序展示' }}
+                    </button>
+                </div>
+                
+                <!-- 第二行：保存按钮独占一行 -->
+                <button class="w-full py-3 px-4 bg-green-500 hover:bg-green-600 text-white rounded-lg shadow-md btn-hover flex items-center justify-center transition-all duration-200" @click="saveToPhone">
+                    <i class="fas fa-download mr-2"></i> 保存到手机
+                </button>
+            </div>
+        </div>
+        
+        <!-- 删除确认弹窗 -->
+        <div class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" v-if="showDeleteModal">
+            <div class="modal-content bg-white rounded-lg shadow-xl w-4/5 max-w-sm p-5 transform transition-all duration-300 scale-100">
+                <h3 class="text-lg font-medium text-gray-900 mb-3 text-center">删除记录</h3>
+                <p class="text-gray-600 mb-5 text-center">确定要删除"{{ records[deleteIndex]?.title }}"这条记录吗？</p>
+                <div class="modal-buttons flex justify-between space-x-3">
+                    <button class="flex-1 py-2 px-4 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800 btn-hover transition-all duration-200" @click="showDeleteModal = false">
+                        取消
+                    </button>
+                    <button class="flex-1 py-2 px-4 bg-red-500 hover:bg-red-600 text-white rounded-lg btn-hover transition-all duration-200" @click="deleteRecord">
+                        确定
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 清空确认弹窗 -->
+        <div class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" v-if="showClearModal">
+            <div class="modal-content bg-white rounded-lg shadow-xl w-4/5 max-w-sm p-5 transform transition-all duration-300 scale-100">
+                <h3 class="text-lg font-medium text-gray-900 mb-3 text-center">清空记录</h3>
+                <p class="text-gray-600 mb-5 text-center">确定要清空全部的记录吗？清空前请确保已经保存</p>
+                <div class="modal-buttons flex justify-between space-x-3">
+                    <button class="flex-1 py-2 px-4 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800 btn-hover transition-all duration-200" @click="showClearModal = false">
+                        取消
+                    </button>
+                    <button class="flex-1 py-2 px-4 bg-red-500 hover:bg-red-600 text-white rounded-lg btn-hover transition-all duration-200" @click="clearAllRecords">
+                        确定
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

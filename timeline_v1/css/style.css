@@ -1,0 +1,198 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+#app {
+    max-width: 100%;
+    margin: 0 auto;
+    position: relative;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.main-view, .save-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.header, .save-header {
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+.current-time {
+    margin: 15px 0;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.time-label {
+    color: #888;
+    font-size: 16px;
+}
+
+.add-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.title-container {
+    margin: 20px 0 10px;
+    text-align: center;
+}
+
+.title-container h2 {
+    font-size: 18px;
+    color: #666;
+    display: inline-block;
+}
+
+.record-list, .save-record-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 20px;
+}
+
+.record-item {
+    display: flex;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+    align-items: center;
+}
+
+.record-time {
+    width: 100px;
+    color: #333;
+    font-weight: bold;
+}
+
+.record-title {
+    flex: 1;
+    padding: 0 15px;
+    color: #666;
+}
+
+.record-delete {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ff6b6b;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.footer, .save-footer {
+    display: flex;
+    padding: 15px;
+    background-color: #fff;
+    border-top: 1px solid #eee;
+}
+
+.footer button, .save-footer button {
+    flex: 1;
+    padding: 10px;
+    margin: 0 5px;
+    border: none;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.back-btn {
+    position: absolute;
+    left: 15px;
+    top: 15px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.save-header h2 {
+    text-align: center;
+    margin: 15px 0;
+    font-size: 18px;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 300px;
+}
+
+.modal-content h3 {
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.modal-content p {
+    margin-bottom: 20px;
+    text-align: center;
+    color: #666;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: space-between;
+}
+
+.modal-buttons button {
+    flex: 1;
+    padding: 10px;
+    margin: 0 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.modal-buttons button:first-child {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.modal-buttons button:last-child {
+    background-color: #4a90e2;
+    color: white;
+}
+
+
+.bg-container {
+    min-height: 200px;
+    width: 100%;
+    position: relative;
+}
