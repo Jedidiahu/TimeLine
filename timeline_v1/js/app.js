@@ -1,6 +1,7 @@
 // 保持Vue实例的核心功能不变，只添加一些增强UI体验的方法
 new Vue({
     el: '#app',
+    // 修改 data 部分的 styleIndex
     data: {
         currentTime: '',
         records: [],
@@ -12,7 +13,7 @@ new Vue({
         showSaveView: false,
         isReversed: false,
         timer: null,
-        // 添加UI相关状态
+        // 修改样式索引上限
         styleIndex: 0, // 样式索引，用于更换样式
         bgImages: [
             'timeline,journey',
@@ -20,6 +21,78 @@ new Vue({
             'diary,notes',
             'memory,moments',
             'history,path'
+        ],
+        // 修改样式数组中的header样式，添加垂直居中属性
+        styles: [
+        // 简约线条风格
+        {
+        bg: `linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)`,
+        content: 'background-color: rgba(255, 255, 255, 0.9); border: 1px solid #e0e0e0; text-align: center;',
+        header: 'background-color: #e8eaf6; border-bottom: 1px solid #c5cae9; display: flex; align-items: center; justify-content: center; min-height: 50px;'
+        },
+        
+        // 简约几何风格
+        {
+        bg: `#f9f9f9`,
+        content: 'background-color: rgba(255, 255, 255, 0.95); border: 1px solid #eaeaea; text-align: center;',
+        header: 'background-color: #efebe9; border-bottom: 1px solid #d7ccc8; display: flex; align-items: center; justify-content: center; min-height: 50px;'
+        },
+        
+        // 柔和渐变风格
+        {
+        bg: `linear-gradient(to right, #ffecd2 0%, #fcb69f 100%)`,
+        content: 'background-color: rgba(255, 255, 255, 0.85); border: 1px solid #ffe0c0; text-align: center;',
+        header: 'background-color: #fff8e1; border-bottom: 1px solid #ffecb3; display: flex; align-items: center; justify-content: center; min-height: 50px;'
+        },
+        
+        // 简约蓝调风格
+        {
+        bg: `#e6f3ff`,
+        content: 'background-color: rgba(255, 255, 255, 0.9); border: 1px solid #d4e8ff; text-align: center;',
+        header: 'background-color: #e3f2fd; border-bottom: 1px solid #bbdefb;'
+        },
+        
+        // 简约暖色风格
+        {
+        bg: `linear-gradient(45deg, #ffe8cc 0%, #ffcab0 100%)`,
+        content: 'background-color: rgba(255, 255, 255, 0.85); border: 1px solid #ffe0c0; text-align: center;',
+        header: 'background-color: #fff3e0; border-bottom: 1px solid #ffe0b2;'
+        },
+        
+        // 马卡龙薄荷绿
+        {
+        bg: `linear-gradient(135deg, #E0F7FA 0%, #80DEEA 100%)`,
+        content: 'background-color: rgba(255, 255, 255, 0.85); border: 1px solid #B2EBF2; text-align: center;',
+        header: 'background-color: #E0F7FA; border-bottom: 1px solid #B2EBF2;'
+        },
+        
+        // 马卡龙粉色
+        {
+        bg: `linear-gradient(135deg, #FCE4EC 0%, #F8BBD0 100%)`,
+        content: 'background-color: rgba(255, 255, 255, 0.85); border: 1px solid #F8BBD0; text-align: center;',
+        header: 'background-color: #FCE4EC; border-bottom: 1px solid #F8BBD0;'
+        },
+        
+        // 马卡龙紫色
+        {
+        bg: `linear-gradient(135deg, #EDE7F6 0%, #D1C4E9 100%)`,
+        content: 'background-color: rgba(255, 255, 255, 0.85); border: 1px solid #D1C4E9; text-align: center;',
+        header: 'background-color: #EDE7F6; border-bottom: 1px solid #D1C4E9;'
+        },
+        
+        // 马卡龙黄色
+        {
+        bg: `linear-gradient(135deg, #FFF8E1 0%, #FFE082 100%)`,
+        content: 'background-color: rgba(255, 255, 255, 0.85); border: 1px solid #FFE082; text-align: center;',
+        header: 'background-color: #FFF8E1; border-bottom: 1px solid #FFE082;'
+        },
+    
+        // 马卡龙蓝色
+        {
+        bg: `linear-gradient(135deg, #E3F2FD 0%, #90CAF9 100%)`,
+        content: 'background-color: rgba(255, 255, 255, 0.85); border: 1px solid #90CAF9; text-align: center;',
+        header: 'background-color: #E3F2FD; border-bottom: 1px solid #90CAF9;'
+        }
         ]
     },
     computed: {
@@ -281,20 +354,13 @@ new Vue({
         
         // 修改saveToPhone方法
         saveToPhone() {
-            // 选择整个记录区域
+            // 选择整个记录区域（包含背景）
             const recordsArea = document.querySelector('.save-record-list');
-            const contentArea = recordsArea.querySelector('.bg-white');
-            
-            // 增加标题区域的上边距，防止被标题栏遮挡
-            const titleElement = contentArea.querySelector('h1, h2, h3') || contentArea.firstElementChild;
-            if (titleElement) {
-                const originalPadding = titleElement.style.paddingTop;
-                titleElement.style.paddingTop = '2rem'; // 增加上边距
+            if (!recordsArea) {
+                console.error('保存视图容器不存在');
+                return;
             }
-            
-            // 确保底部文字已加入
-            this.refreshFooterText();
-            
+
             // 添加加载提示
             const loadingEl = document.createElement('div');
             loadingEl.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
@@ -303,20 +369,37 @@ new Vue({
             
             // 确保样式已应用，并设置合适的尺寸
             setTimeout(() => {
-                // 固定内容宽度，防止尺寸偏移
-                saveArea.style.width = (saveArea.offsetWidth) + 'px';
+                // 计算9:16比例的尺寸
+                const containerWidth = recordsArea.offsetWidth;
+                const targetHeight = Math.round(containerWidth * (16/9));
                 
-                // 计算实际内容高度，避免过多空白
-                const contentHeight = saveArea.scrollHeight;
+                // 设置固定高度以保持比例
+                recordsArea.style.height = `${targetHeight}px`;
+                recordsArea.style.minHeight = `${targetHeight}px`;
                 
-                html2canvas(saveArea, {
-                    backgroundColor: window.getComputedStyle(saveArea).backgroundColor, // 使用元素的背景色
+                // 删除已有的水印文字
+                const existingFooters = recordsArea.querySelectorAll('.timeline-footer');
+                existingFooters.forEach(footer => {
+                    if (footer.parentNode) {
+                        footer.parentNode.removeChild(footer);
+                    }
+                });
+                
+                // 添加水印文字到背景区域
+                const footerText = document.createElement('div');
+                footerText.className = 'timeline-footer';
+                footerText.innerText = 'Provide by 时间线';
+                footerText.style.cssText = 'font-size: 10px; color: #bbb; text-align: center; padding: 8px 0 12px; position: absolute; bottom: 20px; left: 0; right: 0;';
+                recordsArea.appendChild(footerText);
+                
+                html2canvas(recordsArea, {
+                    backgroundColor: window.getComputedStyle(recordsArea).backgroundColor,
                     useCORS: true,
-                    scale: 2, // 提高图片清晰度
+                    scale: 2,
                     logging: false,
                     allowTaint: true,
-                    height: contentHeight,
-                    width: saveArea.offsetWidth,
+                    height: targetHeight,
+                    width: containerWidth,
                     ignoreElements: (element) => {
                         return element.classList.contains('ignore');
                     }
@@ -337,8 +420,15 @@ new Vue({
                     // 移除加载提示
                     document.body.removeChild(loadingEl);
                     
-                    // 恢复容器宽度
-                    saveArea.style.width = '';
+                    // 移除临时添加的水印
+                    const addedFooter = recordsArea.querySelector('.timeline-footer');
+                    if (addedFooter) {
+                        addedFooter.remove();
+                    }
+                    
+                    // 恢复原始高度
+                    recordsArea.style.height = '';
+                    recordsArea.style.minHeight = '';
                 }).catch(err => {
                     console.error('保存图片失败', err);
                     alert('保存图片失败，请重试');
@@ -346,14 +436,22 @@ new Vue({
                     // 移除加载提示
                     document.body.removeChild(loadingEl);
                     
-                    // 恢复容器宽度
-                    saveArea.style.width = '';
+                    // 移除临时添加的水印
+                    const addedFooter = recordsArea.querySelector('.timeline-footer');
+                    if (addedFooter) {
+                        addedFooter.remove();
+                    }
+                    
+                    // 恢复原始高度
+                    recordsArea.style.height = '';
+                    recordsArea.style.minHeight = '';
                 });
-            }, 50); // 短暂延迟以确保样式应用
+            }, 50);
         },
         
         changeStyle() {
-            this.styleIndex = (this.styleIndex + 1) % 5;
+            // 修改样式数量为9种
+            this.styleIndex = (this.styleIndex + 1) % this.styles.length;
             
             // 确保保存视图容器存在
             const container = document.querySelector('.save-record-list');
@@ -362,8 +460,9 @@ new Vue({
                 return;
             }
             
-            // 获取记录容器和标题区域
-            const contentArea = container.querySelector('.bg-white');
+            // 获取保存容器内的内容区域
+            const saveContainer = container.querySelector('.save-container');
+            const contentArea = saveContainer ? saveContainer.querySelector('.bg-white') : container.querySelector('.bg-white');
             const headerArea = contentArea ? contentArea.querySelector('.bg-indigo-50') : null;
             
             if (!contentArea) {
@@ -375,58 +474,25 @@ new Vue({
             const containerWidth = container.offsetWidth;
             const targetHeight = Math.round(containerWidth * (14/9));
             
-            // 定义不同的背景样式
-            const styles = [
-                // 简约线条风格
-                {
-                    bg: `linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)`,
-                    content: 'background-color: rgba(255, 255, 255, 0.9); border: 1px solid #e0e0e0; text-align: center;',
-                    header: 'background-color: #e8eaf6; border-bottom: 1px solid #c5cae9;'
-                },
-                
-                // 简约几何风格
-                {
-                    bg: `#f9f9f9`,
-                    content: 'background-color: rgba(255, 255, 255, 0.95); border: 1px solid #eaeaea; text-align: center;',
-                    header: 'background-color: #efebe9; border-bottom: 1px solid #d7ccc8;'
-                },
-                
-                // 柔和渐变风格
-                {
-                    bg: `linear-gradient(to right, #ffecd2 0%, #fcb69f 100%)`,
-                    content: 'background-color: rgba(255, 255, 255, 0.85); border: 1px solid #ffe0c0; text-align: center;',
-                    header: 'background-color: #fff8e1; border-bottom: 1px solid #ffecb3;'
-                },
-                
-                // 简约蓝调风格
-                {
-                    bg: `#e6f3ff`,
-                    content: 'background-color: rgba(255, 255, 255, 0.9); border: 1px solid #d4e8ff; text-align: center;',
-                    header: 'background-color: #e3f2fd; border-bottom: 1px solid #bbdefb;'
-                },
-                
-                // 简约暖色风格
-                {
-                    bg: `linear-gradient(45deg, #ffe8cc 0%, #ffcab0 100%)`,
-                    content: 'background-color: rgba(255, 255, 255, 0.85); border: 1px solid #ffe0c0; text-align: center;',
-                    header: 'background-color: #fff3e0; border-bottom: 1px solid #ffe0b2;'
-                }
-            ];
-            
             // 删除已有的底部文字
-            const existingFooter = container.querySelector('.timeline-footer');
-            if (existingFooter) {
-                container.removeChild(existingFooter);
-            }
+            const existingFooters = document.querySelectorAll('.timeline-footer');
+            existingFooters.forEach(footer => {
+                if (footer.parentNode) {
+                    footer.parentNode.removeChild(footer);
+                }
+            });
             
             // 直接将样式应用到容器上
-            container.style.background = styles[this.styleIndex].bg;
+            container.style.background = this.styles[this.styleIndex].bg;
             container.style.minHeight = `${targetHeight}px`;
-            contentArea.setAttribute('style', styles[this.styleIndex].content);
+            
+            if (contentArea) {
+                contentArea.setAttribute('style', this.styles[this.styleIndex].content);
+            }
             
             // 应用样式到标题区域
             if (headerArea) {
-                headerArea.setAttribute('style', styles[this.styleIndex].header);
+                headerArea.setAttribute('style', this.styles[this.styleIndex].header);
             }
             
             // 添加底部说明文字
@@ -462,53 +528,16 @@ new Vue({
             const containerWidth = recordsArea.offsetWidth - 32; // 减去padding
             const targetHeight = Math.round(containerWidth * (14/9));
             
-            // 定义不同的背景样式
-            const styles = [
-                // 简约线条风格
-                {
-                    bg: `background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);`,
-                    content: 'background-color: rgba(255, 255, 255, 0.9); border: 1px solid #e0e0e0; text-align: center;',
-                    header: 'background-color: #e8eaf6; border-bottom: 1px solid #c5cae9; padding: 6px 0;'
-                },
-                
-                // 简约几何风格
-                {
-                    bg: `background: #f9f9f9;`,
-                    content: 'background-color: rgba(255, 255, 255, 0.95); border: 1px solid #eaeaea; text-align: center;',
-                    header: 'background-color: #efebe9; border-bottom: 1px solid #d7ccc8; padding: 6px 0;'
-                },
-                
-                // 柔和渐变风格
-                {
-                    bg: `background: linear-gradient(to right, #ffecd2 0%, #fcb69f 100%);`,
-                    content: 'background-color: rgba(255, 255, 255, 0.85); border: 1px solid #ffe0c0; text-align: center;',
-                    header: 'background-color: #fff8e1; border-bottom: 1px solid #ffecb3; padding: 6px 0;'
-                },
-                
-                // 简约蓝调风格
-                {
-                    bg: `background: #e6f3ff;`,
-                    content: 'background-color: rgba(255, 255, 255, 0.9); border: 1px solid #d4e8ff; text-align: center;',
-                    header: 'background-color: #e3f2fd; border-bottom: 1px solid #bbdefb; padding: 6px 0;'
-                },
-                
-                // 简约暖色风格
-                {
-                    bg: `background: linear-gradient(45deg, #ffe8cc 0%, #ffcab0 100%);`,
-                    content: 'background-color: rgba(255, 255, 255, 0.85); border: 1px solid #ffe0c0; text-align: center;',
-                    header: 'background-color: #fff3e0; border-bottom: 1px solid #ffe0b2; padding: 6px 0;'
-                }
-            ];
-            
             // 设置背景区域的样式
-            recordsArea.style.background = styles[this.styleIndex].bg.replace('background:', '').trim();
+            const bgStyle = this.styles[this.styleIndex].bg;
+            recordsArea.style.background = bgStyle.startsWith('linear-gradient') ? bgStyle : bgStyle;
             
             // 设置内容区域样式
-            contentArea.setAttribute('style', styles[this.styleIndex].content);
+            contentArea.setAttribute('style', this.styles[this.styleIndex].content);
             
             // 应用样式到标题区域
             if (headerArea) {
-                headerArea.setAttribute('style', styles[this.styleIndex].header);
+                headerArea.setAttribute('style', this.styles[this.styleIndex].header + '; padding: 6px 0;');
             }
             
             // 更新各个记录项的样式，使其更紧凑
@@ -579,56 +608,25 @@ new Vue({
             const contentArea = recordsArea.querySelector('.bg-white');
             const headerArea = contentArea ? contentArea.querySelector('.bg-indigo-50') : null;
             
-            // 定义不同的背景样式
-            const styles = [
-                // 简约线条风格
-                {
-                    bg: `linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)`,
-                    content: 'background-color: rgba(255, 255, 255, 0.9); border: 1px solid #e0e0e0; text-align: center;',
-                    header: 'background-color: #e8eaf6; border-bottom: 1px solid #c5cae9;'
-                },
-                
-                // 简约几何风格
-                {
-                    bg: `#f9f9f9`,
-                    content: 'background-color: rgba(255, 255, 255, 0.95); border: 1px solid #eaeaea; text-align: center;',
-                    header: 'background-color: #efebe9; border-bottom: 1px solid #d7ccc8;'
-                },
-                
-                // 柔和渐变风格
-                {
-                    bg: `linear-gradient(to right, #ffecd2 0%, #fcb69f 100%)`,
-                    content: 'background-color: rgba(255, 255, 255, 0.85); border: 1px solid #ffe0c0; text-align: center;',
-                    header: 'background-color: #fff8e1; border-bottom: 1px solid #ffecb3;'
-                },
-                
-                // 简约蓝调风格
-                {
-                    bg: `#e6f3ff`,
-                    content: 'background-color: rgba(255, 255, 255, 0.9); border: 1px solid #d4e8ff; text-align: center;',
-                    header: 'background-color: #e3f2fd; border-bottom: 1px solid #bbdefb;'
-                },
-                
-                // 简约暖色风格
-                {
-                    bg: `linear-gradient(45deg, #ffe8cc 0%, #ffcab0 100%)`,
-                    content: 'background-color: rgba(255, 255, 255, 0.85); border: 1px solid #ffe0c0; text-align: center;',
-                    header: 'background-color: #fff3e0; border-bottom: 1px solid #ffe0b2;'
-                }
-            ];
-            
             // 应用背景样式
-            recordsArea.style.background = styles[this.styleIndex].bg;
+            recordsArea.style.background = this.styles[this.styleIndex].bg;
             recordsArea.style.minHeight = `${targetHeight}px`;
             
             // 应用内容区域样式
             if (contentArea) {
-                contentArea.setAttribute('style', styles[this.styleIndex].content);
+                contentArea.setAttribute('style', this.styles[this.styleIndex].content);
             }
             
             // 应用标题区域样式
             if (headerArea) {
-                headerArea.setAttribute('style', styles[this.styleIndex].header);
+                headerArea.setAttribute('style', this.styles[this.styleIndex].header);
+                
+                // 确保标题文本垂直居中
+                const titleElement = headerArea.querySelector('h1, h2, h3');
+                if (titleElement) {
+                    titleElement.style.margin = '0';
+                    titleElement.style.padding = '10px 0';
+                }
             }
             
             // 添加底部说明文字
